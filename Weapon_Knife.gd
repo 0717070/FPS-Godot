@@ -8,6 +8,20 @@ const FIRE_ANIM_NAME = "Knife_fire"
 var is_weapon_enabled = false
 
 var player_node = null
+var ammo_in_weapon = 1
+# ammo_in_weapon= the ammount of ammo currently in the Knife
+var spare_ammo = 1
+# spare_ammo = the ammount of ammo reserved for the Knife
+const AMMO_IN_MAG = 1
+# AMMO_IN_MAG = The amount of ammo in a fully reloaded weapon/magazine
+
+const CAN_RELOAD = false
+#CAN_RELOAD = to track whether this weapon can be reloaded
+const CAN_REFILL = false
+#CAN_REFILL = to track whether we can refill this weapon's spare ammo
+
+const RELOADING_ANIM_NAME = ""
+#RELOADING_ANIM_NAME = The name of the reloading animation for this weapon. since the knife cannot reload, the RELOADING_ANIM_NAME is left as an empty string
 
 func _ready():
 	pass
@@ -42,4 +56,8 @@ func unequip_weapon():
 		is_weapon_enabled = false
 		return true
 
+	return false
+
+#reloading weapon v (knife does not need to reload)
+func reload_weapon():
 	return false

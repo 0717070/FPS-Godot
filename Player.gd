@@ -1,5 +1,5 @@
 extends KinematicBody
-
+var simple_audio_player = preload("res://Simple_Audio_Player.tscn")
 const GRAVITY = -24.8
 #GRAVITY, how strong Gravity pulls the player down
 var vel = Vector3()
@@ -44,6 +44,8 @@ var changing_weapon_name = "UNARMED"
 var health = 100
 
 var UI_status_label
+var reloading_weapon = false
+# Variable to track whether or not the player is currently trying to reload
 
 func _ready():
 	camera = $Rotation_Helper/Camera
@@ -77,6 +79,8 @@ func _physics_process(delta):
 	process_input(delta)
 	process_movement(delta)
 	process_changing_weapons(delta)
+	process_UI(delta)
+	process_reloading(delta) 
 
 func process_input(delta):
 
@@ -156,20 +160,42 @@ func process_input(delta):
 	weapon_change_number = clamp(weapon_change_number, 0, WEAPON_NUMBER_TO_NAME.size()-1)
 	
 	if changing_weapon == false:
-		if WEAPON_NUMBER_TO_NAME[weapon_change_number] != current_weapon_name:
-			changing_weapon_name = WEAPON_NUMBER_TO_NAME[weapon_change_number]
-			changing_weapon = true
+		if reloading_weapon == false:
+			if WEAPON_NUMBER_TO_NAME[weapon_change_number] != current_weapon_name:
+				changing_weapon_name = WEAPON_NUMBER_TO_NAME[weapon_change_number]
+				changing_weapon = true
 	# ----------------------------------
 	
 	# ----------------------------------
-	# Firing the weapons
+	# Firing the weapons (weapons have limited amount of ammo and will stop firing when the player runs out)
 	if Input.is_action_pressed("fire"):
 		if changing_weapon == false:
 			var current_weapon = weapons[current_weapon_name]
 			if current_weapon != null:
-				if animation_manager.current_state == current_weapon.IDLE_ANIM_NAME:
-					animation_manager.set_animation(current_weapon.FIRE_ANIM_NAME)
+				if current_weapon.ammo_in_weapon > 0:
+					if animation_manager.current_state == current_weapon.IDLE_ANIM_NAME:
+						animation_manager.set_animation(current_weapon.FIRE_ANIM_NAME)
+				else:
+					reloading_weapon = true
 	# ----------------------------------
+	# ----------------------------------
+# Reloading
+	if reloading_weapon == false:
+		if changing_weapon == false:
+			if Input.is_action_just_pressed("reload"):  #if reload has been pressed
+				var current_weapon = weapons[current_weapon_name]
+				if current_weapon != null: #check current weapon to make sure it is not null
+					if current_weapon.CAN_RELOAD == true: #check to see whether the weapon can relaod
+						var current_anim_state = animation_manager.current_state #If the weapon can reload, we then get the current animation state, and make a variable for tracking whether the player is already reloading or not.
+						var is_reloading = false
+						for weapon in weapons:
+							var weapon_node = weapons[weapon]
+							if weapon_node != null:
+								if current_anim_state == weapon_node.RELOADING_ANIM_NAME:
+									is_reloading = true
+						if is_reloading == false:
+							reloading_weapon = true #If the player is not reloading any weapon, we set reloading_weapon to true.
+# ----------------------------------
 
 func process_movement(delta):
 	dir.y = 0
@@ -249,3 +275,25 @@ func fire_bullet():
 		return
 
 	weapons[current_weapon_name].fire_weapon()
+
+func process_UI(delta):
+	if current_weapon_name == "UNARMED" or current_weapon_name == "KNIFE":
+		UI_status_label.text = "HEALTH: " + str(health)
+	else:
+		var current_weapon = weapons[current_weapon_name]
+		UI_status_label.text = "HEALTH: " + str(health) + \
+				"\nAMMO: " + str(current_weapon.ammo_in_weapon) + "/" + str(current_weapon.spare_ammo)
+
+#if player is trying to reload
+func process_reloading(delta):
+	if reloading_weapon == true: 
+		var current_weapon = weapons[current_weapon_name]
+		if current_weapon != null: #If the current weapon is equal to null, then the current weapon is UNARMED.
+			current_weapon.reload_weapon()
+		reloading_weapon = false
+
+func create_sound(sound_name, position=null):
+	var audio_clone = simple_audio_player.instance()
+	var scene_root = get_tree().root.get_children()[0]
+	scene_root.add_child(audio_clone)
+	audio_clone.play_sound(sound_name, position)
