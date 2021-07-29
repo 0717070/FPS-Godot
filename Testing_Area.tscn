@@ -1,7 +1,10 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://Player.tscn" type="PackedScene" id=1]
 [ext_resource path="res://RigidBody_hit_test.gd" type="Script" id=2]
+[ext_resource path="res://Ammo_Pickup.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Health_Pickup.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Target.tscn" type="PackedScene" id=5]
 
 [sub_resource type="PlaneMesh" id=1]
 size = Vector2( 80, 80 )
@@ -87,6 +90,7 @@ bounce = 0.6
 [node name="Box" type="Spatial" parent="."]
 
 [node name="Floor_plane" type="MeshInstance" parent="Box"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0628963, 0.0312619, 0.0148994 )
 mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
 
@@ -165,6 +169,15 @@ material/0 = SubResource( 5 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 7 )
+
+[node name="Health_Pickup" parent="." instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -24.3537, 0, 0 )
+
+[node name="Ammo_Pickup" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5941, 0, 0 )
+
+[node name="Target_Whole" parent="." instance=ExtResource( 5 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 21.5866, 39.1105 )
 
 [node name="Cubes" type="Spatial" parent="."]
 

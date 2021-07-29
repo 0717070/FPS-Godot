@@ -55,7 +55,8 @@ var mouse_scroll_value = 0
 #mouse_scroll_value: The value of the mouse scroll wheel.
 const MOUSE_SENSITIVITY_SCROLL_WHEEL = 0.08
 #MOUSE_SENSITIVITY_SCROLL_WHEEL: How much a single scroll action increases mouse_scroll_value
-
+const MAX_HEALTH = 150
+#MAX_HEALTH: The maximum amount of health a player can have.
 func _ready():
 	camera = $Rotation_Helper/Camera
 	rotation_helper = $Rotation_Helper
@@ -190,6 +191,7 @@ func process_input(delta):
 			if WEAPON_NUMBER_TO_NAME[weapon_change_number] != current_weapon_name:
 				changing_weapon_name = WEAPON_NUMBER_TO_NAME[weapon_change_number]
 				changing_weapon = true
+				mouse_scroll_value = weapon_change_number
 
 				
 	# ----------------------------------
@@ -314,11 +316,14 @@ func _input(event):
 						changing_weapon_name = WEAPON_NUMBER_TO_NAME[round_mouse_scroll_value]
 						changing_weapon = true
 						mouse_scroll_value = round_mouse_scroll_value
+						
+						
 #if the event is an InputEventMouseButton event and that the mouse mode is MOUSE_MODE_CAPTURED. Then, we check to see if the button index is either a BUTTON_WHEEL_UP or BUTTON_WHEEL_DOWN index.
 #If the event's index is indeed a button wheel index, we then check to see if it is a BUTTON_WHEEL_UP or BUTTON_WHEEL_DOWN index. Based on whether it is up or down, we add or subtract MOUSE_SENSITIVITY_SCROLL_WHEEL to/from mouse_scroll_value.
 #We then check to see if the player is changing weapons or reloading. If the player is doing neither, we round mouse_scroll_value and cast it to an int.
 #to see if the weapon name at round_mouse_scroll_value is not equal to the current weapon name using WEAPON_NUMBER_TO_NAME. If the weapon is different from the player's current weapon, we assign changing_weapon_name, set changing_weapon to true so the player will change weapons in process_changing_weapon, and set mouse_scroll_value to round_mouse_scroll_value.
 #-------------------------------------------------------------------------
+
 func fire_bullet():
 	if changing_weapon == true:
 		return
@@ -375,3 +380,11 @@ func process_view_input(delta):
 	   camera_rot.x = clamp(camera_rot.x, -70, 70)
 	   rotation_helper.rotation_degrees = camera_rot
    # ----------------------------------
+func add_health(additional_health):
+	health += additional_health
+	health = clamp(health, 0, MAX_HEALTH)
+
+func add_ammo(additional_ammo):
+	if (current_weapon_name != "UNARMED"):
+		if (weapons[current_weapon_name].CAN_REFILL == true):
+			weapons[current_weapon_name].spare_ammo += weapons[current_weapon_name].AMMO_IN_MAG * additional_ammo
